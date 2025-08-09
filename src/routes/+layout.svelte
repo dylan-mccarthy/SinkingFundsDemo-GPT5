@@ -8,6 +8,7 @@
 		<a class="underline" href="/funds">Funds</a>
 	<a class="underline" href="/allocations">Allocations</a>
 		<a class="underline" href="/transactions">Transactions</a>
+	<a class="underline" href="/settings">Settings</a>
 	</nav>
 	<slot />
 </div>
