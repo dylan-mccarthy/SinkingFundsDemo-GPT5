@@ -1,7 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Button from '@skeletonlabs/skeleton/components/Button.svelte';
-  import Input from '@skeletonlabs/skeleton/components/Input.svelte';
 
   type Fund = {
     id: string; name: string; color?: string | null; icon?: string | null; targetCents?: number | null;
@@ -26,10 +24,13 @@
 <h1 class="text-2xl font-bold mb-4">Funds</h1>
 
 <div class="flex gap-2 items-end mb-6">
-  <Input bind:value={name} label="Name" placeholder="e.g., Groceries" />
-  <Button on:click={create}>Create</Button>
-  <Button href="/">Back</Button>
-></div>
+  <label class="form-control w-full max-w-xs">
+    <span class="label">Name</span>
+    <input class="input" bind:value={name} placeholder="e.g., Groceries" />
+  </label>
+  <button class="btn" on:click={create}>Create</button>
+  <a class="btn btn-text" href="/">Back</a>
+</div>
 
 <ul class="space-y-2">
   {#each funds as f}

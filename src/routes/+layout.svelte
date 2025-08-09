@@ -1,7 +1,5 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { setTheme } from '@skeletonlabs/skeleton';
-	setTheme('skeleton');
 </script>
 
 <div class="min-h-screen p-4">
