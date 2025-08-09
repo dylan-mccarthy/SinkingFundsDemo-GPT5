@@ -14,6 +14,12 @@
   let fixedDollars: number | null = null;
   let percentPct: number | null = null; // e.g. 5 means 5%
   let priority = 0;
+  // inline edit state
+  let editingId: string | null = null;
+  let editMode: Rule["mode"] = 'fixed';
+  let editFixedDollars: number | null = null;
+  let editPercentPct: number | null = null;
+  let editPriority = 0;
 
   async function load() {
     const [allocRes, fundsRes] = await Promise.all([
@@ -38,6 +44,42 @@
   async function removeRule(id: string) {
     const res = await fetch(`/api/allocations/${id}`, { method: 'DELETE' });
     if (res.ok) await load();
+  }
+  function startEdit(r: Rule) {
+    editingId = r.id;
+    editMode = r.mode;
+    editFixedDollars = r.fixedCents != null ? r.fixedCents / 100 : null;
+    editPercentPct = r.percentBp != null ? r.percentBp / 100 : null;
+    editPriority = r.priority ?? 0;
+  }
+  function cancelEdit() {
+    editingId = null;
+  }
+  function addValid(): boolean {
+    if (!fundId) return false;
+    if (mode === 'fixed') return fixedDollars != null && fixedDollars > 0;
+    if (mode === 'percent') return percentPct != null && percentPct >= 0 && percentPct <= 100;
+    // priority
+    return priority >= 0;
+  }
+  function editValid(): boolean {
+    if (!editingId) return false;
+    if (editMode === 'fixed') return editFixedDollars != null && editFixedDollars > 0;
+    if (editMode === 'percent') return editPercentPct != null && editPercentPct >= 0 && editPercentPct <= 100;
+    return editPriority >= 0;
+  }
+  async function saveEdit(id: string) {
+    if (!editValid()) return;
+    const fixedCents = editMode === 'fixed' && editFixedDollars != null ? Math.round(editFixedDollars * 100) : null;
+    const percentBp = editMode === 'percent' && editPercentPct != null ? Math.round(editPercentPct * 100) : null;
+    const body: { mode?: Rule['mode']; fixedCents?: number|null; percentBp?: number|null; priority?: number } = {
+      mode: editMode,
+      fixedCents: editMode === 'fixed' ? fixedCents : null,
+      percentBp: editMode === 'percent' ? percentBp : null,
+      priority: editMode === 'priority' ? editPriority : 0
+    };
+    const res = await fetch(`/api/allocations/${id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.ok) { editingId = null; await load(); }
   }
   onMount(load);
 
@@ -95,20 +137,61 @@
         <input class="input w-28" type="number" min="0" step="1" bind:value={priority} />
       </label>
     {/if}
-    <button class="btn" on:click={addRule}>Add</button>
+  <button class="btn" disabled={!addValid()} on:click={addRule}>Add</button>
   </div>
 </div>
 
 <ul class="space-y-1 mb-6">
   {#each rules as r}
-    <li class="text-sm flex justify-between items-center p-2 border rounded">
-      <div>
-        <span class="font-medium">{fundName(r.fundId)}</span>
-        <span class="text-surface-500">
-          — {r.mode === 'fixed' ? `Fixed $${fmt(r.fixedCents ?? 0)}` : r.mode === 'percent' ? `${(r.percentBp ?? 0)/100}%` : `Priority ${r.priority}`}
-        </span>
-      </div>
-      <button class="btn btn-text" on:click={() => removeRule(r.id)}>Delete</button>
+    <li class="text-sm p-2 border rounded">
+      {#if editingId === r.id}
+        <div class="flex flex-wrap gap-2 items-end">
+          <div class="font-medium">{fundName(r.fundId)}</div>
+          <label class="block">
+            <span class="text-xs">Mode</span>
+            <select class="input w-36" bind:value={editMode}>
+              <option value="fixed">Fixed amount</option>
+              <option value="percent">Percent</option>
+              <option value="priority">Priority</option>
+            </select>
+          </label>
+          {#if editMode === 'fixed'}
+            <label class="block">
+              <span class="text-xs">Fixed ($)</span>
+              <input class="input w-28" type="number" min="0" step="0.01" bind:value={editFixedDollars} />
+            </label>
+          {/if}
+          {#if editMode === 'percent'}
+            <label class="block">
+              <span class="text-xs">Percent (%)</span>
+              <input class="input w-24" type="number" min="0" max="100" step="0.01" bind:value={editPercentPct} />
+            </label>
+          {/if}
+          {#if editMode === 'priority'}
+            <label class="block">
+              <span class="text-xs">Priority</span>
+              <input class="input w-20" type="number" min="0" step="1" bind:value={editPriority} />
+            </label>
+          {/if}
+          <div class="ml-auto flex gap-2">
+            <button class="btn btn-ghost" on:click={cancelEdit}>Cancel</button>
+            <button class="btn" disabled={!editValid()} on:click={() => saveEdit(r.id)}>Save</button>
+          </div>
+        </div>
+      {:else}
+        <div class="flex items-center">
+          <div class="flex-1">
+            <span class="font-medium">{fundName(r.fundId)}</span>
+            <span class="text-surface-500">
+              — {r.mode === 'fixed' ? `Fixed $${fmt(r.fixedCents ?? 0)}` : r.mode === 'percent' ? `${(r.percentBp ?? 0)/100}%` : `Priority ${r.priority}`}
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost" on:click={() => startEdit(r)}>Edit</button>
+            <button class="btn btn-text" on:click={() => removeRule(r.id)}>Delete</button>
+          </div>
+        </div>
+      {/if}
     </li>
   {/each}
   {#if rules.length === 0}
