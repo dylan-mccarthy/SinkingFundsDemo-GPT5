@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import Icon from '$lib/components/Icon.svelte';
   type Rule = { id: string; fundId: string; mode: 'fixed'|'percent'|'priority'; fixedCents: number|null; percentBp: number|null; priority: number };
   type Fund = { id: string; name: string };
   type RuleInput = { fundId: string; mode: Rule['mode']; fixedCents: number|null; percentBp: number|null; priority: number };
@@ -90,18 +91,26 @@
   function fmt(c: number) { return (c/100).toFixed(2); }
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Allocations</h1>
-
-<div class="mb-4 flex items-end gap-2">
-  <label for="dep">Deposit (monthly)</label>
-  <input id="dep" class="input w-40" type="number" min="0" step="0.01" bind:value={deposit} />
-  <button class="btn" on:click={runPreview}>Preview</button>
-  <button class="btn btn-ghost" title="Reset all rules" on:click={async () => { await fetch('/api/allocations', { method: 'DELETE' }); await load(); preview = []; }}>Reset rules</button>
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">Allocations</h1>
+  <a href="/" class="btn-soft"><Icon name="home" /> Home</a>
 </div>
 
-<div class="rounded-xl border p-3 mb-6">
-  <div class="font-semibold mb-2">New rule</div>
-  <div class="flex flex-wrap gap-2 items-end">
+<div class="card mb-4">
+  <div class="card-header"><span class="title">Monthly deposit</span><Icon name="wallet" /></div>
+  <div class="card-body flex items-end gap-2">
+    <label for="dep" class="block">
+      <span class="text-xs muted">Deposit ($)</span>
+      <input id="dep" class="input w-40" type="number" min="0" step="0.01" bind:value={deposit} />
+    </label>
+    <button class="btn-primary" on:click={runPreview}><Icon name="adjustments" /> Preview</button>
+    <button class="btn-soft" title="Reset all rules" on:click={async () => { await fetch('/api/allocations', { method: 'DELETE' }); await load(); preview = []; }}><Icon name="star" /> Reset</button>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><span class="title">New rule</span><Icon name="adjustments" /></div>
+  <div class="card-body flex flex-wrap gap-2 items-end">
     <label class="block">
       <span class="text-xs">Fund</span>
       <select class="input w-56" bind:value={fundId}>
@@ -137,13 +146,13 @@
         <input class="input w-28" type="number" min="0" step="1" bind:value={priority} />
       </label>
     {/if}
-  <button class="btn" disabled={!addValid()} on:click={addRule}>Add</button>
+  <button class="btn-primary" disabled={!addValid()} on:click={addRule}><Icon name="star" /> Add</button>
   </div>
 </div>
 
 <ul class="space-y-1 mb-6">
   {#each rules as r}
-    <li class="text-sm p-2 border rounded">
+    <li class="text-sm p-3 border rounded-xl">
       {#if editingId === r.id}
         <div class="flex flex-wrap gap-2 items-end">
           <div class="font-medium">{fundName(r.fundId)}</div>
@@ -174,8 +183,8 @@
             </label>
           {/if}
           <div class="ml-auto flex gap-2">
-            <button class="btn btn-ghost" on:click={cancelEdit}>Cancel</button>
-            <button class="btn" disabled={!editValid()} on:click={() => saveEdit(r.id)}>Save</button>
+            <button class="btn-soft" on:click={cancelEdit}>Cancel</button>
+            <button class="btn-primary" disabled={!editValid()} on:click={() => saveEdit(r.id)}><Icon name="star" /> Save</button>
           </div>
         </div>
       {:else}
@@ -187,8 +196,8 @@
             </span>
           </div>
           <div class="flex gap-2">
-            <button class="btn btn-ghost" on:click={() => startEdit(r)}>Edit</button>
-            <button class="btn btn-text" on:click={() => removeRule(r.id)}>Delete</button>
+            <button class="btn-soft" on:click={() => startEdit(r)}><Icon name="adjustments" /> Edit</button>
+            <button class="btn-soft" on:click={() => removeRule(r.id)}><Icon name="arrows" /> Delete</button>
           </div>
         </div>
       {/if}

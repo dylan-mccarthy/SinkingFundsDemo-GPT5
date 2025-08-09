@@ -62,19 +62,22 @@
 {#if !fund}
   <p>Loading…</p>
 {:else}
-  <h1 class="text-2xl font-bold mb-4">{fund.name}</h1>
-  <div class="grid gap-3 mb-4" style="grid-template-columns: repeat(auto-fit,minmax(200px,1fr));">
-    <div class="p-3 border rounded-xl">
-      <div class="text-xs text-surface-500">Current balance</div>
-      <div class="text-xl font-bold">{cents(currentBalanceCents)}</div>
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-bold break-words">{fund.name}</h1>
+    <a href="/funds" class="btn-soft">Back</a>
+  </div>
+  <div class="grid gap-4 mb-4" style="grid-template-columns: repeat(auto-fit,minmax(220px,1fr));">
+    <div class="card">
+      <div class="card-header"><span class="title">Current balance</span></div>
+      <div class="card-body text-xl font-bold">{cents(currentBalanceCents)}</div>
     </div>
-    <div class="p-3 border rounded-xl">
-      <div class="text-xs text-surface-500">% to target</div>
-      <div class="text-xl font-bold">{percentToTarget !== null ? `${percentToTarget}%` : '—'}</div>
+    <div class="card">
+      <div class="card-header"><span class="title">% to target</span></div>
+      <div class="card-body text-xl font-bold">{percentToTarget !== null ? `${percentToTarget}%` : '—'}</div>
     </div>
-    <div class="p-3 border rounded-xl">
-      <div class="text-xs text-surface-500">Change vs last period</div>
-      <div class="text-xl font-bold {deltaCents>=0 ? 'text-green-600' : 'text-red-600'}">{cents(deltaCents)}</div>
+    <div class="card">
+      <div class="card-header"><span class="title">Change vs last period</span></div>
+      <div class="card-body text-xl font-bold {deltaCents>=0 ? 'text-green-600' : 'text-red-600'}">{cents(deltaCents)}</div>
     </div>
   </div>
   <div class="mb-4 text-surface-500 text-sm">
@@ -87,18 +90,21 @@
   {:else}
     <div class="text-surface-500 text-sm mb-4">No history yet. Start a period to create snapshots.</div>
   {/if}
-  <div class="mb-6">
+  <div class="card mb-6">
+    <div class="card-header"><span class="title">Quick expense</span></div>
+    <div class="card-body">
     <label class="mr-2" for="amt">Amount</label>
     <input id="amt" class="input w-40 mr-2" type="number" min="0" step="0.01" bind:value={amount} />
     <label class="mr-2" for="dt">Date</label>
     <input id="dt" class="input w-40 mr-2" type="date" bind:value={date} />
-    <button class="btn" on:click={addExpense}>Add Expense</button>
+    <button class="btn-primary" on:click={addExpense}>Add Expense</button>
+    </div>
   </div>
 
   <h2 class="text-xl font-semibold mb-2">Transactions</h2>
   <ul class="space-y-2">
     {#each txs as t}
-      <li class="p-2 border rounded-xl flex justify-between">
+      <li class="p-3 border rounded-xl flex justify-between">
         <div class="flex gap-2">
           <span class="font-mono text-xs">{t.date.slice(0,10)}</span>
           <span class="uppercase text-xs">{t.type}</span>

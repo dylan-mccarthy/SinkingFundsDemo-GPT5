@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import Icon from '$lib/components/Icon.svelte';
   let year = new Date().getUTCFullYear();
   let month = new Date().getUTCMonth() + 1;
   let deposit = 0; // dollars
@@ -20,31 +21,38 @@
   onMount(loadPreview);
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Periods</h1>
-<div class="flex gap-2 items-end mb-4">
-  <label class="block">
-    <span class="text-xs">Year</span>
-    <input class="input w-24" type="number" bind:value={year} />
-  </label>
-  <label class="block">
-    <span class="text-xs">Month</span>
-    <input class="input w-20" type="number" min="1" max="12" bind:value={month} />
-  </label>
-  <label class="block">
-    <span class="text-xs">Deposit ($)</span>
-    <input class="input w-32" type="number" min="0" step="0.01" bind:value={deposit} />
-  </label>
-  <button class="btn" on:click={loadPreview}>Preview</button>
-  <button class="btn" on:click={startMonth}>Start Month</button>
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">Periods</h1>
+  <a href="/" class="btn-soft"><Icon name="home" /> Home</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><span class="title">Plan</span><Icon name="calendar" /></div>
+  <div class="card-body flex gap-3 items-end flex-wrap">
+    <label class="block">
+      <span class="text-xs muted">Year</span>
+      <input class="input w-24" type="number" bind:value={year} />
+    </label>
+    <label class="block">
+      <span class="text-xs muted">Month</span>
+      <input class="input w-20" type="number" min="1" max="12" bind:value={month} />
+    </label>
+    <label class="block">
+      <span class="text-xs muted">Deposit ($)</span>
+      <input class="input w-32" type="number" min="0" step="0.01" bind:value={deposit} />
+    </label>
+    <button class="btn-primary" on:click={loadPreview}><Icon name="adjustments" /> Preview</button>
+    <button class="btn-soft" on:click={startMonth}><Icon name="calendar" /> Start Month</button>
+  </div>
 </div>
 
 {#if loading}
   <p>Loading…</p>
 {:else}
   <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit,minmax(260px,1fr));">
-    <div class="p-3 border rounded-xl">
-      <div class="text-sm text-surface-500 mb-2">Carry-forward</div>
-      <ul class="text-sm space-y-1">
+    <div class="card">
+      <div class="card-header"><span class="title">Carry-forward</span><Icon name="wallet" /></div>
+      <ul class="card-body text-sm space-y-1">
         {#each preview.carry as c}
           <li class="flex justify-between"><span>{c.name}</span><span>${fmt(c.balanceCents)}</span></li>
         {/each}
@@ -53,9 +61,9 @@
         {/if}
       </ul>
     </div>
-    <div class="p-3 border rounded-xl">
-      <div class="text-sm text-surface-500 mb-2">Allocations</div>
-      <ul class="text-sm space-y-1">
+    <div class="card">
+      <div class="card-header"><span class="title">Allocations</span><Icon name="adjustments" /></div>
+      <ul class="card-body text-sm space-y-1">
         {#each preview.allocations as a}
           <li class="flex justify-between"><span>{a.fundId}</span><span>${fmt(a.amountCents)}</span></li>
         {/each}

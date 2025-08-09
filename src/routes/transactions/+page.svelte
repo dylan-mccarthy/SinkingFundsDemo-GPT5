@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import Icon from '$lib/components/Icon.svelte';
 
   type Tx = { id: string; type: string; amountCents: number; date: string; fundId?: string | null; payee?: string | null };
   let txs: Tx[] = [];
@@ -12,11 +13,14 @@
   onMount(load);
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Transactions</h1>
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">Transactions</h1>
+  <a class="btn-soft" href="/" title="Home"><Icon name="home" /> Home</a>
+  </div>
 
 <ul class="space-y-2">
   {#each txs as t}
-    <li class="p-2 border rounded-xl flex justify-between">
+    <li class="p-3 border rounded-xl flex justify-between">
       <div class="flex gap-2">
         <span class="font-mono text-xs">{t.date.slice(0,10)}</span>
         <span class="uppercase text-xs">{t.type}</span>
