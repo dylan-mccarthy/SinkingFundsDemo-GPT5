@@ -25,6 +25,15 @@ export const POST: RequestHandler = async ({ request }) => {
   const userId = getUserId();
   const body = await request.json();
   const data = TxSchema.parse(body);
+  // Optional overspend prevention
+  const settings = await prisma.settings.findUnique({ where: { userId } });
+  if (settings?.overspendPrevent && data.type === 'EXPENSE' && data.fundId) {
+    const agg = await prisma.transaction.aggregate({ where: { userId, fundId: data.fundId }, _sum: { amountCents: true } });
+    const balance = (agg._sum.amountCents ?? 0);
+    if (balance + normalizeAmount('EXPENSE', data.amountCents) < 0) {
+      return new Response(JSON.stringify({ error: 'Overspend prevented' }), { status: 400, headers: { 'content-type': 'application/json' } });
+    }
+  }
   const periodId = await assignPeriodId(new Date(data.date), userId);
   const created = await prisma.transaction.create({
     data: {
