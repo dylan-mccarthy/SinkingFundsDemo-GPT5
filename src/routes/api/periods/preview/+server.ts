@@ -23,7 +23,17 @@ export const GET: RequestHandler = async ({ url }) => {
   const rules = await getRules(userId);
   const allocations = previewAllocations(depositCents, rules);
 
-  const carry = funds.map((f: { id: string; name: string }) => ({ fundId: f.id, name: f.name, balanceCents: balMap.get(f.id) ?? 0 }));
+  const fundMeta = new Map<string, { name: string; color: string | null }>(
+    (funds as Array<{ id: string; name: string; color: string | null }>).map((f) => [f.id, { name: f.name, color: f.color }])
+  );
 
-  return new Response(JSON.stringify({ year, month, depositCents, carry, allocations }), { headers: { 'content-type': 'application/json' } });
+  const carry = (funds as Array<{ id: string; name: string; color: string | null }>).
+    map((f) => ({ fundId: f.id, name: f.name, color: f.color, balanceCents: balMap.get(f.id) ?? 0 }));
+
+  const allocationsWithMeta = allocations.map((a) => {
+    const meta = fundMeta.get(a.fundId);
+    return { ...a, name: meta?.name ?? a.fundId, color: meta?.color ?? null };
+  });
+
+  return new Response(JSON.stringify({ year, month, depositCents, carry, allocations: allocationsWithMeta }), { headers: { 'content-type': 'application/json' } });
 };

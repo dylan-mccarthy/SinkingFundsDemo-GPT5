@@ -5,7 +5,7 @@
   let month = new Date().getUTCMonth() + 1;
   let deposit = 0; // dollars
   let loading = false;
-  let preview: { carry: Array<{ fundId: string; name: string; balanceCents: number; color?: string }>; allocations: Array<{ fundId: string; amountCents: number; color?: string }> } = { carry: [], allocations: [] };
+  let preview: { carry: Array<{ fundId: string; name: string; balanceCents: number; color?: string }>; allocations: Array<{ fundId: string; name: string; amountCents: number; color?: string }> } = { carry: [], allocations: [] };
   function fmt(c: number) { return (c/100).toFixed(2); }
 
   async function loadPreview() {
@@ -69,7 +69,7 @@
       <ul class="card-body text-sm space-y-1">
         {#each preview.allocations as a}
           <li class="flex items-center justify-between accent-l" style={`--accent:${a.color ?? '#64748b'}`}>
-            <span class="flex items-center gap-2"><span class="accent-dot"></span>{a.fundId}</span>
+            <span class="flex items-center gap-2"><span class="accent-dot"></span>{a.name}</span>
             <span>${fmt(a.amountCents)}</span>
           </li>
         {/each}
