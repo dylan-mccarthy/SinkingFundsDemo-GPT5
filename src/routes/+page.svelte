@@ -3,7 +3,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 		let totalCents = 0;
 		let funds: Array<{ id: string; name: string }> = [];
-		let balances: Array<{ fundId: string; name: string; balanceCents: number; percentToTarget: number|null }> = [];
+		let balances: Array<{ fundId: string; name: string; color?: string | null; balanceCents: number; percentToTarget: number|null }> = [];
 		let recent: Array<{ id: string; type: string; date: string; amountCents: number }> = [];
 		let loading = true;
 		let gamification: { streakMonths: number; level: number; badges: string[] } = { streakMonths: 0, level: 0, badges: [] };
@@ -80,15 +80,23 @@
 		</a>
 	</div>
 		<div class="grid gap-4" style="grid-template-columns: repeat(auto-fit,minmax(260px,1fr));">
-			<div class="card">
+					<div class="card">
 				<div class="card-header"><span class="title">Top funds</span><Icon name="star" /></div>
 				<ul class="card-body space-y-1 text-sm">
-					{#each balances.slice(0,5) as b}
-						<li class="flex justify-between">
-							<span>{b.name}</span>
-							<span>${fmt(b.balanceCents)} {b.percentToTarget !== null ? `(${b.percentToTarget}%)` : ''}</span>
-						</li>
-					{/each}
+						{#each balances.slice(0,5) as b}
+							<li class="flex items-center justify-between accent-l" style={`--accent:${b.color ?? '#64748b'}`}>
+								<span class="flex items-center gap-2">
+									<span class="accent-dot"></span>
+									{b.name}
+								</span>
+								<span class="flex items-center gap-2">
+									${fmt(b.balanceCents)}
+									{#if b.percentToTarget !== null}
+										<span class="badge accent-badge" style={`--accent:${b.color ?? '#64748b'}`}>{b.percentToTarget}%</span>
+									{/if}
+								</span>
+							</li>
+						{/each}
 				</ul>
 				</div>
 				<div class="card">

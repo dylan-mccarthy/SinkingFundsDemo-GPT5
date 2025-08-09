@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import Icon from '$lib/components/Icon.svelte';
   type Rule = { id: string; fundId: string; mode: 'fixed'|'percent'|'priority'; fixedCents: number|null; percentBp: number|null; priority: number };
-  type Fund = { id: string; name: string };
+  type Fund = { id: string; name: string; color?: string };
   type RuleInput = { fundId: string; mode: Rule['mode']; fixedCents: number|null; percentBp: number|null; priority: number };
   let rules: Rule[] = [];
   let fundsList: Fund[] = [];
@@ -84,10 +84,8 @@
   }
   onMount(load);
 
-  function fundName(id: string) {
-    const f = fundsList.find((x) => x.id === id);
-    return f ? f.name : id;
-  }
+  function fundById(id: string) { return fundsList.find((x) => x.id === id); }
+  function fundName(id: string) { return fundById(id)?.name ?? id; }
   function fmt(c: number) { return (c/100).toFixed(2); }
 </script>
 
@@ -152,10 +150,10 @@
 
 <ul class="space-y-1 mb-6">
   {#each rules as r}
-    <li class="text-sm p-3 border rounded-xl">
+  <li class="text-sm p-3 border rounded-xl accent-l" style={`--accent:${fundById(r.fundId)?.color ?? '#64748b'}`}>
       {#if editingId === r.id}
         <div class="flex flex-wrap gap-2 items-end">
-          <div class="font-medium">{fundName(r.fundId)}</div>
+      <div class="font-medium flex items-center gap-2"><span class="accent-dot"></span>{fundName(r.fundId)}</div>
           <label class="block">
             <span class="text-xs">Mode</span>
             <select class="input w-36" bind:value={editMode}>
@@ -188,9 +186,9 @@
           </div>
         </div>
       {:else}
-        <div class="flex items-center">
+    <div class="flex items-center">
           <div class="flex-1">
-            <span class="font-medium">{fundName(r.fundId)}</span>
+      <span class="font-medium flex items-center gap-2"><span class="accent-dot"></span>{fundName(r.fundId)}</span>
             <span class="text-surface-500">
               — {r.mode === 'fixed' ? `Fixed $${fmt(r.fixedCents ?? 0)}` : r.mode === 'percent' ? `${(r.percentBp ?? 0)/100}%` : `Priority ${r.priority}`}
             </span>
@@ -211,7 +209,10 @@
 <h2 class="text-xl font-semibold mb-2">Preview</h2>
 <ul class="space-y-1">
   {#each preview as p}
-    <li class="text-sm">{fundName(p.fundId)}: ${fmt(p.amountCents)}</li>
+    <li class="text-sm flex items-center justify-between accent-l" style={`--accent:${fundById(p.fundId)?.color ?? '#64748b'}`}>
+      <span class="flex items-center gap-2"><span class="accent-dot"></span>{fundName(p.fundId)}</span>
+      <span>${fmt(p.amountCents)}</span>
+    </li>
   {/each}
   {#if preview.length === 0}
     <li class="text-surface-500">No preview.</li>

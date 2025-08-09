@@ -48,9 +48,9 @@
 
 <ul class="space-y-2">
   {#each funds as f}
-    <li class="p-4 rounded-xl border flex items-center justify-between gap-3">
+    <li class="p-4 rounded-xl border flex items-center justify-between gap-3 accent-l" style={`--accent:${f.color ?? '#64748b'}`}>
       <div class="flex items-center gap-3 min-w-0">
-        <span class="w-3 h-3 rounded-full shrink-0" style={`background:${f.color ?? '#999'}`}></span>
+        <span class="accent-dot shrink-0"></span>
         <span class="font-medium break-words">{f.name}</span>
       </div>
       <a class="btn-soft" href={`/funds/${f.id}`} aria-label={`Open ${f.name}`} title={f.name}>

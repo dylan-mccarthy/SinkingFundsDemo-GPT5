@@ -29,3 +29,8 @@ button:focus-visible,
 a:focus-visible {
 	@apply outline-none ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 ring-offset-white dark:ring-offset-slate-950;
 }
+
+/* Accent utilities (use with style="--accent:#hex") */
+.accent-l { border-left-width: 4px; border-left-color: var(--accent, #cbd5e1); padding-left: 0.75rem; }
+.accent-dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; background-color: var(--accent, #64748b); }
+.accent-badge { border-color: var(--accent, #64748b); color: var(--accent, #64748b); }
