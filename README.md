@@ -1,38 +1,29 @@
-# create-svelte
+# Sinking Funds Manager
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+Track spending with rollover-based sinking funds. Built with SvelteKit, Skeleton UI, Prisma, and SQLite.
 
-## Creating a project
+## Quick start
 
-If you're seeing this, you've probably already done this step. Congrats!
+1. Install deps
+2. Create the database (SQLite)
+3. Run the dev server
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Commands
 
 ```bash
+npm install
+npx prisma migrate dev --name init # creates ./prisma/sinkingfunds.db
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Then open <http://localhost:5173> and navigate to Funds.
 
-To create a production version of your app:
+## Tech stack
 
-```bash
-npm run build
-```
+- SvelteKit + Skeleton (Tailwind)
+- Prisma ORM + SQLite
 
-You can preview the production build with `npm run preview`.
+## Notes
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+- API routes live under `src/routes/api`. UI pages under `src/routes`.
+- `Transaction.tags` is stored as JSON due to SQLite limitations.
