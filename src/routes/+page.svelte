@@ -4,7 +4,8 @@
 		let funds: Array<{ id: string; name: string }> = [];
 		let balances: Array<{ fundId: string; name: string; balanceCents: number; percentToTarget: number|null }> = [];
 		let recent: Array<{ id: string; type: string; date: string; amountCents: number }> = [];
-	let loading = true;
+		let loading = true;
+		let gamification: { streakMonths: number; level: number; badges: string[] } = { streakMonths: 0, level: 0, badges: [] };
 	async function load() {
 		const res = await fetch('/api/reports/summary');
 		if (res.ok) {
@@ -16,6 +17,8 @@
 		if (b.ok) balances = await b.json();
 		const t = await fetch('/api/transactions');
 		if (t.ok) recent = (await t.json()).slice(0, 5);
+		const g = await fetch('/api/gamification');
+		if (g.ok) gamification = await g.json();
 		loading = false;
 	}
 	onMount(load);
@@ -51,8 +54,8 @@
 						</li>
 					{/each}
 				</ul>
-			</div>
-			<div class="p-4 rounded-xl border">
+				</div>
+				<div class="p-4 rounded-xl border">
 				<div class="text-sm text-surface-500 mb-2">Recent activity</div>
 				<ul class="space-y-1 text-sm">
 					{#each recent as r}
@@ -63,6 +66,30 @@
 					{/each}
 				</ul>
 			</div>
+				<div class="p-4 rounded-xl border">
+					<div class="text-sm text-surface-500 mb-2">Gamification</div>
+					<div class="flex items-center gap-4">
+						<div>
+							<div class="text-xs text-surface-500">Streak</div>
+							<div class="text-xl font-bold">{gamification.streakMonths} months</div>
+						</div>
+						<div>
+							<div class="text-xs text-surface-500">Level</div>
+							<div class="text-xl font-bold">{gamification.level}</div>
+						</div>
+						<div class="flex-1">
+							<div class="text-xs text-surface-500 mb-1">Badges</div>
+							<div class="flex flex-wrap gap-2">
+								{#each gamification.badges as b}
+									<span class="px-2 py-1 rounded-full border text-xs">{b}</span>
+								{/each}
+								{#if gamification.badges.length === 0}
+									<span class="text-surface-500 text-xs">No badges yet. Keep saving!</span>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
 		</div>
-		<div class="mt-4 text-surface-500 text-sm">Gamification panel coming soon (streaks, badges, levels)</div>
+  
 {/if}
