@@ -111,3 +111,12 @@ model AuditLog {
   context   String?
   createdAt DateTime @default(now())
 }
+
+model Settings {
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  currency           String  @default("AUD")
+  timezone           String  @default("Australia/Melbourne")
+  monthlyDepositDay  Int     @default(1)
+  overspendPrevent   Boolean @default(false)
+}
