@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Icon from '$lib/components/Icon.svelte';
+  import { page } from '$app/stores';
   let year = new Date().getUTCFullYear();
   let month = new Date().getUTCMonth() + 1;
   let deposit = 0; // dollars
@@ -18,7 +19,14 @@
     const res = await fetch('/api/periods', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ year, month, depositCents: Math.round(deposit*100) }) });
     if (res.ok) await loadPreview();
   }
-  onMount(loadPreview);
+  onMount(() => {
+    const u = $page.url;
+    const y = Number(u.searchParams.get('year'));
+    const m = Number(u.searchParams.get('month'));
+    if (y) year = y;
+    if (m) month = m;
+    loadPreview();
+  });
 </script>
 
 <div class="flex items-center justify-between mb-4">

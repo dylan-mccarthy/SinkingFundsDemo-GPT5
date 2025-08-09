@@ -2,10 +2,16 @@
 	import '../app.postcss';
 	import { onMount } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { page } from '$app/stores';
 
 	let isDark = true;
 	let hasUserPref = false; // track if user explicitly chose a theme
 	let sidebarOpen = false;
+		$: pathname = $page.url.pathname;
+		// Month selector state (defaults to current UTC)
+		let selYear = new Date().getUTCFullYear();
+		let selMonth = new Date().getUTCMonth() + 1;
+		function periodsLink() { return `/periods?year=${selYear}&month=${selMonth}`; }
 
 	function applyTheme() {
 		document.documentElement.classList.toggle('dark', isDark);
@@ -56,18 +62,18 @@
 
 <div class="app-root min-h-screen flex">
 	<!-- Sidebar -->
-	<aside class={`hidden md:flex md:flex-col w-64 shrink-0 border-r bg-white dark:bg-slate-950`} aria-label="Sidebar">
+		<aside class={`hidden md:flex md:flex-col w-64 shrink-0 border-r bg-white dark:bg-slate-950`} aria-label="Sidebar">
 		<div class="px-4 py-4 font-bold inline-flex items-center gap-2 border-b">
 			<Icon name="wallet" />
 			<span>Sinking Funds</span>
 		</div>
-		<nav class="p-3 space-y-2 text-sm">
-			<a class="btn-soft w-full justify-start" href="/"><Icon name="home" /><span>Home</span></a>
-			<a class="btn-soft w-full justify-start" href="/funds"><Icon name="wallet" /><span>Funds</span></a>
-			<a class="btn-soft w-full justify-start" href="/periods"><Icon name="calendar" /><span>Periods</span></a>
-			<a class="btn-soft w-full justify-start" href="/allocations"><Icon name="adjustments" /><span>Allocations</span></a>
-			<a class="btn-soft w-full justify-start" href="/transactions"><Icon name="receipt" /><span>Transactions</span></a>
-			<a class="btn-soft w-full justify-start" href="/settings"><Icon name="cog" /><span>Settings</span></a>
+			<nav class="p-3 space-y-2 text-sm">
+				<a class={`btn-soft w-full justify-start ${pathname==='/' ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/" aria-current={pathname==='/' ? 'page' : undefined}><Icon name="home" /><span>Home</span></a>
+				<a class={`btn-soft w-full justify-start ${pathname.startsWith('/funds') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/funds" aria-current={pathname.startsWith('/funds') ? 'page' : undefined}><Icon name="wallet" /><span>Funds</span></a>
+				<a class={`btn-soft w-full justify-start ${pathname.startsWith('/periods') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/periods" aria-current={pathname.startsWith('/periods') ? 'page' : undefined}><Icon name="calendar" /><span>Periods</span></a>
+				<a class={`btn-soft w-full justify-start ${pathname.startsWith('/allocations') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/allocations" aria-current={pathname.startsWith('/allocations') ? 'page' : undefined}><Icon name="adjustments" /><span>Allocations</span></a>
+				<a class={`btn-soft w-full justify-start ${pathname.startsWith('/transactions') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/transactions" aria-current={pathname.startsWith('/transactions') ? 'page' : undefined}><Icon name="receipt" /><span>Transactions</span></a>
+				<a class={`btn-soft w-full justify-start ${pathname.startsWith('/settings') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/settings" aria-current={pathname.startsWith('/settings') ? 'page' : undefined}><Icon name="cog" /><span>Settings</span></a>
 		</nav>
 		<div class="mt-auto p-3 text-xs text-surface-500">© {new Date().getFullYear()} Sinking Funds</div>
 	</aside>
@@ -81,13 +87,13 @@
 				<Icon name="wallet" />
 				<span>Sinking Funds</span>
 			</div>
-				<nav class="p-3 space-y-2 text-sm">
-					<a class="btn-soft w-full justify-start" href="/" on:click={() => sidebarOpen=false}><Icon name="home" /><span>Home</span></a>
-					<a class="btn-soft w-full justify-start" href="/funds" on:click={() => sidebarOpen=false}><Icon name="wallet" /><span>Funds</span></a>
-					<a class="btn-soft w-full justify-start" href="/periods" on:click={() => sidebarOpen=false}><Icon name="calendar" /><span>Periods</span></a>
-					<a class="btn-soft w-full justify-start" href="/allocations" on:click={() => sidebarOpen=false}><Icon name="adjustments" /><span>Allocations</span></a>
-					<a class="btn-soft w-full justify-start" href="/transactions" on:click={() => sidebarOpen=false}><Icon name="receipt" /><span>Transactions</span></a>
-					<a class="btn-soft w-full justify-start" href="/settings" on:click={() => sidebarOpen=false}><Icon name="cog" /><span>Settings</span></a>
+						<nav class="p-3 space-y-2 text-sm">
+							<a class={`btn-soft w-full justify-start ${pathname==='/' ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/" on:click={() => sidebarOpen=false} aria-current={pathname==='/' ? 'page' : undefined}><Icon name="home" /><span>Home</span></a>
+							<a class={`btn-soft w-full justify-start ${pathname.startsWith('/funds') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/funds" on:click={() => sidebarOpen=false} aria-current={pathname.startsWith('/funds') ? 'page' : undefined}><Icon name="wallet" /><span>Funds</span></a>
+							<a class={`btn-soft w-full justify-start ${pathname.startsWith('/periods') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/periods" on:click={() => sidebarOpen=false} aria-current={pathname.startsWith('/periods') ? 'page' : undefined}><Icon name="calendar" /><span>Periods</span></a>
+							<a class={`btn-soft w-full justify-start ${pathname.startsWith('/allocations') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/allocations" on:click={() => sidebarOpen=false} aria-current={pathname.startsWith('/allocations') ? 'page' : undefined}><Icon name="adjustments" /><span>Allocations</span></a>
+							<a class={`btn-soft w-full justify-start ${pathname.startsWith('/transactions') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/transactions" on:click={() => sidebarOpen=false} aria-current={pathname.startsWith('/transactions') ? 'page' : undefined}><Icon name="receipt" /><span>Transactions</span></a>
+							<a class={`btn-soft w-full justify-start ${pathname.startsWith('/settings') ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}`} href="/settings" on:click={() => sidebarOpen=false} aria-current={pathname.startsWith('/settings') ? 'page' : undefined}><Icon name="cog" /><span>Settings</span></a>
 			</nav>
 		</aside>
 	</div>
@@ -103,7 +109,26 @@
 					<Icon name="wallet" />
 					<span>Sinking Funds</span>
 				</a>
-				<div class="ml-auto flex items-center gap-2">
+						<div class="ml-auto flex items-center gap-2">
+							<!-- Month selector (quick access to Periods) -->
+							<label class="hidden sm:flex items-center gap-2 text-xs" aria-label="Select month">
+								<select class="input w-28" bind:value={selMonth} aria-label="Month">
+									<option value={1}>Jan</option>
+									<option value={2}>Feb</option>
+									<option value={3}>Mar</option>
+									<option value={4}>Apr</option>
+									<option value={5}>May</option>
+									<option value={6}>Jun</option>
+									<option value={7}>Jul</option>
+									<option value={8}>Aug</option>
+									<option value={9}>Sep</option>
+									<option value={10}>Oct</option>
+									<option value={11}>Nov</option>
+									<option value={12}>Dec</option>
+								</select>
+								<input class="input w-20" type="number" bind:value={selYear} aria-label="Year" />
+								<a class="btn-soft" href={periodsLink()} title="Open Periods">Go</a>
+							</label>
 					<button
 						class="icon-btn"
 						aria-label="Toggle theme"
