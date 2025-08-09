@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   type Rule = { id: string; fundId: string; mode: 'fixed'|'percent'|'priority'; fixedCents: number|null; percentBp: number|null; priority: number };
+  type Fund = { id: string; name: string };
+  type RuleInput = { fundId: string; mode: Rule['mode']; fixedCents: number|null; percentBp: number|null; priority: number };
   let rules: Rule[] = [];
+  let fundsList: Fund[] = [];
   let deposit = 0;
   let preview: { fundId: string; amountCents: number }[] = [];
   // form
@@ -12,15 +15,19 @@
   let priority = 0;
 
   async function load() {
-    const res = await fetch('/api/allocations');
-    if (res.ok) rules = (await res.json()).rules ?? [];
+    const [allocRes, fundsRes] = await Promise.all([
+      fetch('/api/allocations'),
+      fetch('/api/funds')
+    ]);
+    if (allocRes.ok) rules = (await allocRes.json()).rules ?? [];
+    if (fundsRes.ok) fundsList = await fundsRes.json();
   }
   async function runPreview() {
     const res = await fetch(`/api/allocations?depositCents=${Math.round(deposit*100)}`);
     if (res.ok) preview = (await res.json()).preview ?? [];
   }
   async function addRule() {
-    const body: any = { fundId, mode, fixedCents, percentBp, priority };
+    const body: RuleInput = { fundId, mode, fixedCents, percentBp, priority };
     const res = await fetch('/api/allocations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     if (res.ok) { fundId=''; mode='fixed'; fixedCents=null; percentBp=null; priority=0; await load(); }
   }
@@ -43,8 +50,13 @@
   <div class="font-semibold mb-2">New rule</div>
   <div class="flex flex-wrap gap-2 items-end">
     <label class="block">
-      <span class="text-xs">Fund ID</span>
-      <input class="input w-48" bind:value={fundId} placeholder="fund id" />
+      <span class="text-xs">Fund</span>
+      <select class="input w-48" bind:value={fundId}>
+        <option value="" disabled selected>Select a fund</option>
+        {#each fundsList as f}
+          <option value={f.id}>{f.name}</option>
+        {/each}
+      </select>
     </label>
     <label class="block">
       <span class="text-xs">Mode</span>
