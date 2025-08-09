@@ -21,7 +21,7 @@ export const POST: RequestHandler = async ({ request }) => {
   const run = await prisma.allocationRun.create({ data: { userId, periodId, depositCents: data.depositCents, hash: crypto.randomUUID() } });
   await prisma.$transaction(
     allocs.map((a) =>
-      prisma.transaction.create({ data: { userId, periodId, fundId: a.fundId, type: 'ALLOCATION' as any, amountCents: a.amountCents, date, tags: [] } })
+      prisma.transaction.create({ data: { userId, periodId, fundId: a.fundId, type: 'ALLOCATION', amountCents: a.amountCents, date, tags: [] } })
     )
   );
   for (const a of allocs) {

@@ -6,7 +6,10 @@ export type Allocation = { fundId: string; amountCents: number };
 export async function getRules(userId: string): Promise<Rule[]> {
   const rules = await prisma.allocationRule.findMany({ where: { userId, active: true }, orderBy: [{ priority: 'asc' }] });
   return (rules as Array<{ fundId: string; mode: string; fixedCents: number | null; percentBp: number | null; priority: number }>).
-    map((r) => ({ fundId: r.fundId, mode: r.mode as any, fixedCents: r.fixedCents ?? undefined, percentBp: r.percentBp ?? undefined, priority: r.priority }));
+    map((r) => {
+      const mode: Rule['mode'] = r.mode === 'fixed' || r.mode === 'percent' || r.mode === 'priority' ? (r.mode as Rule['mode']) : 'fixed';
+      return { fundId: r.fundId, mode, fixedCents: r.fixedCents ?? undefined, percentBp: r.percentBp ?? undefined, priority: r.priority };
+    });
 }
 
 export function previewAllocations(depositCents: number, rules: Rule[]): Allocation[] {

@@ -31,8 +31,8 @@ export const POST: RequestHandler = async ({ request }) => {
       userId,
       periodId,
       fundId: data.fundId ?? null,
-      type: data.type as any,
-      amountCents: normalizeAmount(data.type as any, data.amountCents),
+  type: data.type,
+  amountCents: normalizeAmount(data.type, data.amountCents),
       date: new Date(data.date),
       payee: data.payee ?? null,
       note: data.note ?? null,
@@ -52,8 +52,8 @@ export const PUT: RequestHandler = async ({ request, url }) => {
   const groupId = crypto.randomUUID();
   const periodId = await assignPeriodId(new Date(data.date), userId);
   const created = await prisma.$transaction([
-    prisma.transaction.create({ data: { userId, periodId, fundId: data.fromFundId, type: 'TRANSFER_OUT' as any, amountCents: normalizeAmount('TRANSFER_OUT', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } }),
-    prisma.transaction.create({ data: { userId, periodId, fundId: data.toFundId, type: 'TRANSFER_IN' as any, amountCents: normalizeAmount('TRANSFER_IN', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } })
+    prisma.transaction.create({ data: { userId, periodId, fundId: data.fromFundId, type: 'TRANSFER_OUT', amountCents: normalizeAmount('TRANSFER_OUT', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } }),
+    prisma.transaction.create({ data: { userId, periodId, fundId: data.toFundId, type: 'TRANSFER_IN', amountCents: normalizeAmount('TRANSFER_IN', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } })
   ]);
   return new Response(JSON.stringify(created), { status: 201, headers: { 'content-type': 'application/json' } });
 };
