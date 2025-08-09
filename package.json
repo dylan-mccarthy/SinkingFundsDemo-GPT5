@@ -37,6 +37,7 @@
   "description": "Track and gamify sinking funds with allocations, rollovers, and reports",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^6.13.0"
+    "@prisma/client": "^6.13.0",
+    "zod": "^4.0.16"
   }
 }
