@@ -8,9 +8,12 @@ const getUserId = () => 'demo-user';
 export const GET: RequestHandler = async ({ url }) => {
   const userId = getUserId();
   const depositCents = Number(url.searchParams.get('depositCents') ?? '0');
+  // Raw rules with IDs for UI operations
+  const rulesDb = await prisma.allocationRule.findMany({ where: { userId, active: true }, orderBy: [{ priority: 'asc' }] });
+  // Normalized rules for preview calculations
   const rules = await getRules(userId);
   const preview = previewAllocations(depositCents, rules);
-  return new Response(JSON.stringify({ rules, preview }), { headers: { 'content-type': 'application/json' } });
+  return new Response(JSON.stringify({ rules: rulesDb, preview }), { headers: { 'content-type': 'application/json' } });
 };
 
 export const POST: RequestHandler = async ({ request }) => {
