@@ -7,6 +7,8 @@
 		let recent: Array<{ id: string; type: string; date: string; amountCents: number }> = [];
 		let loading = true;
 		let gamification: { streakMonths: number; level: number; badges: string[] } = { streakMonths: 0, level: 0, badges: [] };
+		let prevBadges: string[] = [];
+		let newBadge: string | null = null;
 	async function load() {
 		const res = await fetch('/api/reports/summary');
 		if (res.ok) {
@@ -19,7 +21,16 @@
 		const t = await fetch('/api/transactions');
 		if (t.ok) recent = (await t.json()).slice(0, 5);
 		const g = await fetch('/api/gamification');
-		if (g.ok) gamification = await g.json();
+			if (g.ok) {
+				const gj = await g.json();
+				// detect new badge
+				const diff = (gj.badges as string[]).find((b: string) => !prevBadges.includes(b));
+				gamification = gj;
+				if (diff) {
+					newBadge = diff;
+					prevBadges = gj.badges;
+				}
+			}
 		loading = false;
 	}
 	onMount(load);
@@ -33,6 +44,18 @@
 {#if loading}
 	<p>Loading…</p>
 {:else}
+	{#if newBadge}
+		<div class="card p-0 mb-4" role="status" aria-live="polite">
+			<div class="card-body flex items-center gap-3">
+				<Icon name="trophy" />
+				<div class="flex-1">
+					<div class="font-semibold">New badge unlocked!</div>
+					<div class="text-sm muted">{newBadge}</div>
+				</div>
+				<button class="btn-soft" on:click={() => newBadge=null} aria-label="Dismiss">Dismiss</button>
+			</div>
+		</div>
+	{/if}
 	<div class="grid gap-4 mb-6" style="grid-template-columns: repeat(auto-fit,minmax(220px,1fr));">
 		<div class="card">
 			<div class="card-header">

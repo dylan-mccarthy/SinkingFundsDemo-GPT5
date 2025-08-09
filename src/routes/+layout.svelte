@@ -53,7 +53,7 @@
 
 </script>
 
-<div class="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+<div class="app-root min-h-screen">
 	<header class="sticky top-0 z-10 backdrop-blur bg-white/70 dark:bg-slate-950/70 border-b">
 			<div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
 				<a href="/" class="font-bold inline-flex items-center gap-2">
