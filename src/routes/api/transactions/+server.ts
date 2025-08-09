@@ -34,7 +34,15 @@ export const POST: RequestHandler = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'Overspend prevented' }), { status: 400, headers: { 'content-type': 'application/json' } });
     }
   }
-  const periodId = await assignPeriodId(new Date(data.date), userId);
+  const dateObj = new Date(data.date);
+  const year = dateObj.getUTCFullYear();
+  const month = dateObj.getUTCMonth() + 1;
+  // Prevent creating tx in a CLOSED period
+  const existing = await prisma.period.findFirst({ where: { userId, year, month } });
+  if (existing && existing.status === 'CLOSED') {
+    return new Response(JSON.stringify({ error: 'Period is closed. Reopen to modify.' }), { status: 409, headers: { 'content-type': 'application/json' } });
+  }
+  const periodId = await assignPeriodId(dateObj, userId);
   const created = await prisma.transaction.create({
     data: {
       userId,
@@ -59,7 +67,14 @@ export const PUT: RequestHandler = async ({ request, url }) => {
   const schema = z.object({ fromFundId: z.string(), toFundId: z.string(), amountCents: z.number().int(), date: z.string() });
   const data = schema.parse(body);
   const groupId = crypto.randomUUID();
-  const periodId = await assignPeriodId(new Date(data.date), userId);
+  const d = new Date(data.date);
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth() + 1;
+  const ex = await prisma.period.findFirst({ where: { userId, year: y, month: m } });
+  if (ex && ex.status === 'CLOSED') {
+    return new Response(JSON.stringify({ error: 'Period is closed. Reopen to modify.' }), { status: 409, headers: { 'content-type': 'application/json' } });
+  }
+  const periodId = await assignPeriodId(d, userId);
   const created = await prisma.$transaction([
     prisma.transaction.create({ data: { userId, periodId, fundId: data.fromFundId, type: 'TRANSFER_OUT', amountCents: normalizeAmount('TRANSFER_OUT', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } }),
     prisma.transaction.create({ data: { userId, periodId, fundId: data.toFundId, type: 'TRANSFER_IN', amountCents: normalizeAmount('TRANSFER_IN', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } })

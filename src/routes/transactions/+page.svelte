@@ -17,7 +17,10 @@
 
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-2xl font-bold">Transactions</h1>
-  <a class="btn-soft" href="/" title="Home"><Icon name="home" /> Home</a>
+  <div class="flex gap-2">
+    <a class="btn-soft" href="/api/export/csv" download title="Export CSV"><Icon name="receipt" /> Export</a>
+    <a class="btn-soft" href="/" title="Home"><Icon name="home" /> Home</a>
+  </div>
   </div>
 
 <div class="card mb-4">

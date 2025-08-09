@@ -14,6 +14,7 @@
   let currentBalanceCents = 0;
   let percentToTarget: number | null = null;
   let deltaCents = 0;
+  let myLevel: number | null = null;
 
   async function load() {
     const id = get(page).params.id;
@@ -35,6 +36,13 @@
     const points = history.map((h) => (h.closingCents ?? h.openingCents));
     if (points.length >= 2) deltaCents = (points[points.length - 1] ?? 0) - (points[points.length - 2] ?? 0);
     else deltaCents = 0;
+    // gamification per-fund level
+    const g = await fetch('/api/gamification');
+    if (g.ok) {
+      const gj = await g.json();
+      const me = gj.funds?.find((x: { fundId: string }) => x.fundId === id);
+      myLevel = me?.level ?? null;
+    }
   }
 
   async function addExpense() {
@@ -81,6 +89,10 @@
     <div class="card">
       <div class="card-header"><span class="title">Change vs last period</span></div>
       <div class="card-body text-xl font-bold {deltaCents>=0 ? 'text-green-600' : 'text-red-600'}">{cents(deltaCents)}</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="title">Level</span></div>
+      <div class="card-body text-xl font-bold">{myLevel !== null ? `Level ${myLevel}` : '—'}</div>
     </div>
   </div>
   <div class="mb-1 text-surface-500 text-sm">
