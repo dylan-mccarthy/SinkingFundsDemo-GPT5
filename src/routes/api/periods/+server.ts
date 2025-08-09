@@ -15,6 +15,24 @@ export const POST: RequestHandler = async ({ request }) => {
   const date = new Date(Date.UTC(data.year, data.month - 1, 1));
   const periodId = await assignPeriodId(date, userId);
 
+  // Create opening snapshots for each active fund using current balance
+  const funds = await prisma.fund.findMany({ where: { userId, active: true } });
+  const grouped = await prisma.transaction.groupBy({ by: ['fundId'], where: { userId }, _sum: { amountCents: true } });
+  const balMap = new Map<string, number>(
+    (grouped as Array<{ fundId: string | null; _sum: { amountCents: number | null } }>)
+      .filter((g) => g.fundId !== null)
+      .map((g) => [g.fundId as string, g._sum.amountCents ?? 0])
+  );
+  await prisma.$transaction(
+    funds.map((f: { id: string }) =>
+      prisma.fundPeriodSnapshot.upsert({
+        where: { userId_periodId_fundId: { userId, periodId, fundId: f.id } },
+        update: { openingCents: balMap.get(f.id) ?? 0 },
+        create: { userId, periodId, fundId: f.id, openingCents: balMap.get(f.id) ?? 0 }
+      })
+    )
+  );
+
   // Allocation preview and apply as transactions of type ALLOCATION
   const rules = await getRules(userId);
   const allocs = previewAllocations(data.depositCents, rules);
