@@ -54,6 +54,7 @@
   <label for="dep">Deposit (monthly)</label>
   <input id="dep" class="input w-40" type="number" min="0" step="0.01" bind:value={deposit} />
   <button class="btn" on:click={runPreview}>Preview</button>
+  <button class="btn btn-ghost" title="Reset all rules" on:click={async () => { await fetch('/api/allocations', { method: 'DELETE' }); await load(); preview = []; }}>Reset rules</button>
 </div>
 
 <div class="rounded-xl border p-3 mb-6">

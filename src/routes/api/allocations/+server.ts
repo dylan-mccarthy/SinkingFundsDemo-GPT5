@@ -15,8 +15,20 @@ export const GET: RequestHandler = async ({ url }) => {
 
 export const POST: RequestHandler = async ({ request }) => {
   const userId = getUserId();
-  const schema = z.object({ fundId: z.string(), mode: z.enum(['fixed','percent','priority']), fixedCents: z.number().int().optional(), percentBp: z.number().int().optional(), priority: z.number().int().default(0) });
+  const schema = z.object({
+    fundId: z.string(),
+    mode: z.enum(['fixed','percent','priority']),
+    fixedCents: z.union([z.number().int(), z.null()]).optional(),
+    percentBp: z.union([z.number().int(), z.null()]).optional(),
+    priority: z.number().int().default(0)
+  });
   const data = schema.parse(await request.json());
   const rule = await prisma.allocationRule.create({ data: { userId, fundId: data.fundId, mode: data.mode, fixedCents: data.fixedCents ?? null, percentBp: data.percentBp ?? null, priority: data.priority } });
   return new Response(JSON.stringify(rule), { status: 201, headers: { 'content-type': 'application/json' } });
+};
+
+export const DELETE: RequestHandler = async () => {
+  const userId = getUserId();
+  await prisma.allocationRule.deleteMany({ where: { userId } });
+  return new Response(null, { status: 204 });
 };
