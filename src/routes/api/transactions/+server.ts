@@ -1,5 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
+import { assignPeriodId, normalizeAmount } from '$lib/server/services/util/transactions';
 import { z } from 'zod';
 
 const getUserId = () => 'demo-user';
@@ -24,17 +25,35 @@ export const POST: RequestHandler = async ({ request }) => {
   const userId = getUserId();
   const body = await request.json();
   const data = TxSchema.parse(body);
+  const periodId = await assignPeriodId(new Date(data.date), userId);
   const created = await prisma.transaction.create({
     data: {
       userId,
+      periodId,
       fundId: data.fundId ?? null,
       type: data.type as any,
-      amountCents: data.amountCents,
+      amountCents: normalizeAmount(data.type as any, data.amountCents),
       date: new Date(data.date),
       payee: data.payee ?? null,
       note: data.note ?? null,
       tags: data.tags
     }
   });
+  return new Response(JSON.stringify(created), { status: 201, headers: { 'content-type': 'application/json' } });
+};
+
+// Transfer endpoint: POST /api/transactions?transfer=1
+export const PUT: RequestHandler = async ({ request, url }) => {
+  if (!url.searchParams.get('transfer')) return new Response('Bad Request', { status: 400 });
+  const userId = getUserId();
+  const body = await request.json();
+  const schema = z.object({ fromFundId: z.string(), toFundId: z.string(), amountCents: z.number().int(), date: z.string() });
+  const data = schema.parse(body);
+  const groupId = crypto.randomUUID();
+  const periodId = await assignPeriodId(new Date(data.date), userId);
+  const created = await prisma.$transaction([
+    prisma.transaction.create({ data: { userId, periodId, fundId: data.fromFundId, type: 'TRANSFER_OUT' as any, amountCents: normalizeAmount('TRANSFER_OUT', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } }),
+    prisma.transaction.create({ data: { userId, periodId, fundId: data.toFundId, type: 'TRANSFER_IN' as any, amountCents: normalizeAmount('TRANSFER_IN', data.amountCents), date: new Date(data.date), transferGroupId: groupId, tags: [] } })
+  ]);
   return new Response(JSON.stringify(created), { status: 201, headers: { 'content-type': 'application/json' } });
 };
