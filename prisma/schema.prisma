@@ -1,0 +1,113 @@
+// Prisma schema for Sinking Funds Manager
+// Note: SQLite doesn't support scalar list columns; `Transaction.tags` is stored as JSON.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER_OUT
+  TRANSFER_IN
+  ALLOCATION
+}
+
+enum PeriodStatus {
+  OPEN
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Fund {
+  id               String   @id @default(cuid())
+  userId           String
+  name             String
+  description      String?
+  color            String?
+  icon             String?
+  active           Boolean  @default(true)
+  targetCents      Int?
+  minReserveCents  Int?
+  displayOrder     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Period {
+  id        String       @id @default(cuid())
+  userId    String
+  year      Int
+  month     Int
+  status    PeriodStatus @default(OPEN)
+  startedAt DateTime
+  closedAt  DateTime?
+
+  @@unique([userId, year, month])
+}
+
+model AllocationRule {
+  id          String   @id @default(cuid())
+  userId      String
+  fundId      String
+  mode        String
+  percentBp   Int?
+  fixedCents  Int?
+  priority    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AllocationRun {
+  id           String   @id @default(cuid())
+  userId       String
+  periodId     String
+  depositCents Int
+  executedAt   DateTime @default(now())
+  hash         String
+}
+
+model AllocationLine {
+  id              String @id @default(cuid())
+  allocationRunId String
+  fundId          String
+  amountCents     Int
+}
+
+model Transaction {
+  id              String         @id @default(cuid())
+  userId          String
+  periodId        String?
+  fundId          String?
+  type            TransactionType
+  amountCents     Int
+  date            DateTime
+  payee           String?
+  note            String?
+  // SQLite limitation: use JSON for tags (array of strings)
+  tags            Json
+  transferGroupId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  context   String?
+  createdAt DateTime @default(now())
+}
