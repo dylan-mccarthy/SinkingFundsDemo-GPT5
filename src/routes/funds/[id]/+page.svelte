@@ -11,6 +11,9 @@
   let amount = 0;
   let date = new Date().toISOString().slice(0,10);
   let history: Array<{ periodId: string; openingCents: number; closingCents: number|null }> = [];
+  let currentBalanceCents = 0;
+  let percentToTarget: number | null = null;
+  let deltaCents = 0;
 
   async function load() {
     const id = get(page).params.id;
@@ -20,6 +23,18 @@
   if (t.ok) txs = (await t.json() as Tx[]).filter((x) => x.fundId === id);
     const h = await fetch(`/api/funds/${id}/history`);
     if (h.ok) history = await h.json();
+    // balances
+    const b = await fetch('/api/funds/balances');
+    if (b.ok) {
+      const all = await b.json() as Array<{ fundId: string; balanceCents: number; percentToTarget: number|null }>;
+      const me = all.find((x) => x.fundId === id);
+      currentBalanceCents = me?.balanceCents ?? 0;
+      percentToTarget = me?.percentToTarget ?? null;
+    }
+    // delta (last - previous) using snapshots
+    const points = history.map((h) => (h.closingCents ?? h.openingCents));
+    if (points.length >= 2) deltaCents = (points[points.length - 1] ?? 0) - (points[points.length - 2] ?? 0);
+    else deltaCents = 0;
   }
 
   async function addExpense() {
@@ -48,6 +63,20 @@
   <p>Loading…</p>
 {:else}
   <h1 class="text-2xl font-bold mb-4">{fund.name}</h1>
+  <div class="grid gap-3 mb-4" style="grid-template-columns: repeat(auto-fit,minmax(200px,1fr));">
+    <div class="p-3 border rounded-xl">
+      <div class="text-xs text-surface-500">Current balance</div>
+      <div class="text-xl font-bold">{cents(currentBalanceCents)}</div>
+    </div>
+    <div class="p-3 border rounded-xl">
+      <div class="text-xs text-surface-500">% to target</div>
+      <div class="text-xl font-bold">{percentToTarget !== null ? `${percentToTarget}%` : '—'}</div>
+    </div>
+    <div class="p-3 border rounded-xl">
+      <div class="text-xs text-surface-500">Change vs last period</div>
+      <div class="text-xl font-bold {deltaCents>=0 ? 'text-green-600' : 'text-red-600'}">{cents(deltaCents)}</div>
+    </div>
+  </div>
   <div class="mb-4 text-surface-500 text-sm">
     Balance trend
   </div>
