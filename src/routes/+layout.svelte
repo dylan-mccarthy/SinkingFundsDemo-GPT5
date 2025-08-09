@@ -1,11 +1,55 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { onMount } from 'svelte';
+
 	let isDark = true;
+	let hasUserPref = false; // track if user explicitly chose a theme
+
 	function applyTheme() {
 		document.documentElement.classList.toggle('dark', isDark);
+		try {
+			if (hasUserPref) {
+				localStorage.setItem('theme', isDark ? 'dark' : 'light');
+			}
+		} catch {}
 	}
-	onMount(applyTheme);
+
+	function detectInitialTheme() {
+		try {
+			const saved = localStorage.getItem('theme');
+			if (saved === 'dark' || saved === 'light') {
+				isDark = saved === 'dark';
+				hasUserPref = true;
+				return;
+			}
+		} catch {}
+		// fall back to system preference
+		const prefersDark = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+		isDark = !!prefersDark;
+	}
+
+	function watchSystemPref() {
+		// Only react to system changes if user hasn't explicitly chosen
+		const mq = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+		if (!mq) return;
+		const handler = (e: MediaQueryListEvent) => {
+			if (!hasUserPref) {
+				isDark = e.matches;
+			}
+		};
+		mq.addEventListener?.('change', handler);
+		return () => mq.removeEventListener?.('change', handler);
+	}
+
+	onMount(() => {
+		detectInitialTheme();
+		const unwatch = watchSystemPref();
+		applyTheme();
+		return () => {
+			unwatch && unwatch();
+		};
+	});
+
 	$: applyTheme();
 </script>
 
@@ -23,7 +67,15 @@
 			</nav>
 					<div class="ml-auto flex items-center gap-2">
 						<span id="theme-label" class="text-xs">{isDark ? 'Dark' : 'Light'}</span>
-						<button class="btn" aria-labelledby="theme-label" on:click={() => (isDark = !isDark)} aria-label="Toggle theme">Toggle</button>
+						<button
+							class="btn"
+							aria-labelledby="theme-label"
+							aria-pressed={isDark}
+							on:click={() => { hasUserPref = true; isDark = !isDark; }}
+							aria-label="Toggle theme"
+						>
+							Toggle
+						</button>
 					</div>
 		</div>
 	</header>
